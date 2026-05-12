@@ -4,6 +4,8 @@ __pycache__/
 *.pyo
 .pytest_cache/
 mlruns/
+mlflow.db
 data/raw/*.parquet
 data/raw/*.csv
 .venv/
+models/*.joblib
