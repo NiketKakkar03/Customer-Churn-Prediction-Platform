@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+mlruns/
+data/raw/*.parquet
+data/raw/*.csv
+.venv/

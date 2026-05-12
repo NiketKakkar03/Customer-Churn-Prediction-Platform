@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS customer_features (
+    customer_id        TEXT        NOT NULL,
+    as_of_date         DATE        NOT NULL,
+    tenure_months                  INTEGER,
+    monthly_charges                NUMERIC(10, 2),
+    total_charges                  NUMERIC(10, 2),
+    support_calls_last_30d         INTEGER,
+    support_calls_prior_30d        INTEGER,
+    support_calls_delta            NUMERIC(10, 4),
+    data_usage_last_30d            NUMERIC(10, 4),
+    data_usage_prior_30d           NUMERIC(10, 4),
+    data_usage_delta               NUMERIC(10, 4),
+    contract_type                  TEXT,
+    payment_method                 TEXT,
+    paperless_billing              BOOLEAN,
+    internet_service               TEXT,
+    has_online_security            BOOLEAN,
+    has_tech_support               BOOLEAN,
+    num_products                   INTEGER,
+    created_at                     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (customer_id, as_of_date)
+);
