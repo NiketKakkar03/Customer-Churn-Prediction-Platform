@@ -35,6 +35,7 @@ def train(as_of_date: datetime.date | None = None) -> TrainResult | None:
     if best.precision_at_50 >= champion_p50:
         joblib.dump(best.pipeline, CHAMPION_PATH)
         _save_champion_meta(best, as_of_date)
+        _save_training_baseline(train_df)
         print(
             f"model_trainer: promoted '{best.model_name}' "
             f"Precision@50={best.precision_at_50:.4f} "
@@ -54,6 +55,13 @@ def _load_champion_p50() -> float:
         meta = json.loads(CHAMPION_META_PATH.read_text())
         return float(meta.get("precision_at_50", 0.0))
     return 0.0
+
+
+def _save_training_baseline(train_df) -> None:
+    import pandas as pd
+    from .train import _FEATURE_COLS
+    baseline_path = MODELS_DIR / "training_baseline.parquet"
+    train_df[_FEATURE_COLS].to_parquet(baseline_path, index=False)
 
 
 def _save_champion_meta(result: TrainResult, as_of_date: datetime.date) -> None:

@@ -1,0 +1,6 @@
+{
+  "drift_detected": false,
+  "should_retrain": false,
+  "share_drifted_columns": 0.2857142857142857,
+  "checked_at": "2026-05-13"
+}

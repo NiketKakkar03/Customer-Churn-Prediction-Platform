@@ -5,6 +5,8 @@ import pytest
 from dotenv import load_dotenv
 load_dotenv()
 
+pytestmark = pytest.mark.integration
+
 @pytest.fixture
 def db_conn():
     conn = psycopg2.connect(

@@ -4,3 +4,10 @@ version = "0.1.0"
 
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires a live Postgres instance (deselect with -m 'not integration')",
+]
+# Default: exclude integration tests so `pytest` works without Docker
+addopts = "-m 'not integration'"

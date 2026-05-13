@@ -1,0 +1,82 @@
+name: Model Promotion Gate
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  quality-gate:
+    name: Precision@50 quality gate
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: churn
+          POSTGRES_USER: churn_user
+          POSTGRES_PASSWORD: churn_pass
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U churn_user -d churn"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5433
+      DB_NAME: churn
+      DB_USER: churn_user
+      DB_PASSWORD: churn_pass
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Apply DB migrations
+        run: |
+          for f in migrations/*.sql; do
+            psql postgresql://churn_user:churn_pass@localhost:5433/churn -f "$f"
+          done
+
+      - name: Download IBM Telco dataset
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          pip install kaggle
+          kaggle datasets download -d blastchar/telco-customer-churn -p /tmp
+          unzip /tmp/telco-customer-churn.zip -d /tmp
+          python -c "
+          import pandas as pd
+          df = pd.read_csv('/tmp/WA_Fn-UseC_-Telco-Customer-Churn.csv')
+          df.to_parquet('data/raw/telco_churn.parquet', index=False)
+          print(f'Dataset ready: {len(df)} rows')
+          "
+
+      - name: Run feature pipeline
+        run: python -m src.feature_pipeline.pipeline
+
+      - name: Run quality gate
+        id: gate
+        run: python scripts/quality_gate.py
+
+      - name: Commit promoted model artifacts
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add models/champion_meta.json models/training_baseline.parquet
+          git diff --cached --quiet || git commit -m "ci: promote champion model [skip ci]"
+          git push

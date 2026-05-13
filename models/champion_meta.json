@@ -1,7 +1,7 @@
 {
   "model_name": "logistic_regression",
-  "precision_at_50": 0.82,
-  "auc_roc": 0.7492353371837632,
-  "mlflow_run_id": "b8201aa647434a75ad5d492de5aa23e9",
-  "trained_on": "2026-05-12"
+  "precision_at_50": 0.84,
+  "auc_roc": 0.7475130858087151,
+  "mlflow_run_id": "3af64f2dd2914d9c93549a4586345083",
+  "trained_on": "2026-05-13"
 }
