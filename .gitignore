@@ -9,3 +9,4 @@ data/raw/*.parquet
 data/raw/*.csv
 .venv/
 models/*.joblib
+churn_platform.egg-info/
