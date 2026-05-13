@@ -25,3 +25,19 @@ jobs:
         # Integration tests (require live Postgres) are excluded by default
         # via pyproject.toml addopts = "-m 'not integration'"
         run: pytest --tb=short -q
+
+  docker-build:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build -f Dockerfile.api -t churn-api:ci .
+
+      - name: Build dashboard image
+        run: docker build -f Dockerfile.dashboard -t churn-dashboard:ci .
+
+      - name: Build orchestrator image
+        run: docker build -f Dockerfile.orchestrator -t churn-orchestrator:ci .

@@ -16,6 +16,62 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: churn
+      DB_USER: churn_user
+      DB_PASSWORD: churn_pass
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: churn
+      DB_USER: churn_user
+      DB_PASSWORD: churn_pass
+    volumes:
+      - ./models:/app/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    profiles: [nightly]
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: churn
+      DB_USER: churn_user
+      DB_PASSWORD: churn_pass
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+      PUSHGATEWAY_URL: pushgateway:9091
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   pushgateway:
     image: prom/pushgateway:v1.8.0
     ports:
@@ -27,9 +83,6 @@ services:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    extra_hosts:
-      # Allows Prometheus to scrape FastAPI running on the host machine
-      - "host.docker.internal:host-gateway"
     depends_on:
       - pushgateway
 
